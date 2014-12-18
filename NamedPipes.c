@@ -21,19 +21,37 @@
     mkfifo - <sys/types.h> <sys/stat.h>
       C function creates a FIFO
       Returns 0 on success and -1 on failure
-      Once created, the FIFO acts like a regular gile, and we can use open, read, and write
-      mkfifo ( <name> <permission> );
+      Once created, the FIFO acts like a regular file, and we can use open, read, and write
+      mkfifo ( <name>, <permission> );
         -blocks on the open call until read or write
       
 */
-
+//this code is fragmented severly
 int main(){
+  /*
+  int to_client;
   int from_client;
-  char[256];
-  mkfifo("mario",0644);
-  from_client(open("mario",O_RDONLY));
-  read(from_client,line,sizeof(line_));
-  close(from_client);
+  */
 
+  int to_server;
+  int from_server;
+  char line[256];
+  sprintf(line,"%d",getpid());
+  mkfifo(line,0644);
+  from_server = open(line,O_RDONLY);
+  //create and open WKP
+  /*
+  mkfifo("mario",0644);
+  from_client=open("mario",O_RDONLY);
+  printf("Client Enter Stuff:");
+  read(from_client,line,sizeof(line));
+  printf("Client Wrote: %s\n",line);
+  */
+  //connect to downstream pipe
+  to_client = open(line, O_WRONLY);
+  strncpy(line, "It's a me, mario!",sizeof(line));
+
+  close(from_client);
+  close(to_client);
   return 0;
 }
