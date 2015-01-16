@@ -1,0 +1,86 @@
+/*
+  Aim: Cisco In An Hour V for Vendetta
+  
+  Sockets
+    Sockets is a connection between two computers created programatically
+    A socket has 2 ends, each one consisting of an IP Address/Port pair
+    To use a socket
+      1. create the socket
+      2. bind it to an address and port
+      3. listen/initiate a connection*
+      4. send/receive data
+    socket < sys/socket.h, sys/types.h>
+      creates a socket
+      returns a socket descriptor (int similar to a file descriptor)
+      socket(<domain>,<type>,<protocol>)
+        domain: type of address, IPv4, IPv6
+	  AF_INET: IPv4
+	  AF_INET6: IPv6
+	type: tcp/udp
+	  SOCK_STREAM: tcp
+	  SOCK_DGRAM: udp
+	protcol
+	  set to 0 and then it will use teh correct protocol based on domain and the type
+    bind
+      binds the socket to an address and port
+      returns 0 or -1
+      A "server" might bind to any incoming address but only a specific port, whereas a client would bind to a specific address
+      bind(<desciptor>,<address/port>,<address length>)
+        descriptor: return value of socket
+	address pointer to a struct sockaddr_in
+	  sin_family
+	    address type (AF_INET)
+	  sin_addr
+	    IP address in binary
+	    inet_aton(string, address variable)
+	      will convert a string representing an ip address to the correct format
+	    INADDR_ANY: used to denote any oncoming connection
+	  sin_port
+	    htons(int)
+	      will return the port in the correct order (little Endian)
+	      
+	      
+*/
+#include <sys/socket.h>
+#include <netinet/in.h>
+int main(int argc, char **argv){
+  //client
+  int socket_id;
+  char buffer[256];
+  int i,b;
+  socket_id = socket(AF_INET,SOCK_STREAM,0);
+  struct sockaddr_in sock;
+  sock.sin_family = AF_INET;
+  sock.sin_port = htons(24601);
+  inet_aton("149.89.150.1",&(sock.sin_addr));
+  bind(socket_id,(struct sockaddr *)&sock,sizeof(sock));
+  //if tcp
+  i = connect(socket_id,(struct sockaddr *)&sock,sizeof(sock));
+  printf("connect returned: %d\n",i);
+  read(socket_id,buffer,sizeof(buffer));
+  return 0;
+}
+
+char * process(char * s);
+
+int main(){
+  //server
+  int socket_id, socket_client;
+  char buffer[256];
+  int i,b;
+  socket_id = socket(AF_INET,SOCK_STREAM,0);
+  struct sockaddr_in listener;
+  listener.sin_family = AF_INET;
+  listener.sin_port = htons(24601);
+  listener.sin_addr.s_addr = INADDR_ANY;
+  bind(socket_id, (struct sockaddr *)&listener, sizeof(listener));
+  //if UDP then done
+  listen(socket_id,1);
+  printf("Listened\n");
+  socket_client = accept(socket_id,NULL,NULL);
+  printf("Accepted\n");
+  write(socket_client,"hello",6);
+  
+
+  return 0;
+}
